@@ -1,0 +1,123 @@
+#=============================================================#
+    #            　　　End_stop_cell作成を行う関数
+    #=============================================================#
+    def Make_endstop_cell(self,img,img_size,size,overlap_x,overlap_y,gain):
+
+        #===================================================================================
+        #simple cellの作成
+        #ガボールフィルタリング(画像サイズは，(size,size)) simple cellの応答の作成
+        image_0_odd = cv2.filter2D(src=img, ddepth=0, kernel=np.array(self.gabor_dic["0_odd"]))
+        image_45_odd = cv2.filter2D(src=img, ddepth=0, kernel=np.array(self.gabor_dic["45_odd"]))
+        image_90_odd = cv2.filter2D(src=img, ddepth=0, kernel=np.array(self.gabor_dic["90_odd"]))
+        image_135_odd = cv2.filter2D(src=img, ddepth=0, kernel=np.array(self.gabor_dic["135_odd"]))
+
+        image_0_even = cv2.filter2D(src=img, ddepth=0, kernel=np.array(self.gabor_dic["0_even"]))
+        image_45_even = cv2.filter2D(src=img, ddepth=0, kernel=np.array(self.gabor_dic["45_even"]))
+        image_90_even = cv2.filter2D(src=img, ddepth=0, kernel=np.array(self.gabor_dic["90_even"]))
+        image_135_even = cv2.filter2D(src=img, ddepth=0, kernel=np.array(self.gabor_dic["135_even"]))
+        #===================================================================================
+
+
+
+        #===================================================================================
+        #complex cellの作成
+        image_0_odd2 = cv2.copyMakeBorder(image_0_odd, overlap_y , overlap_y , overlap_x , overlap_x , cv2.BORDER_CONSTANT, (0,0,0))
+        image_45_odd2 = cv2.copyMakeBorder(image_45_odd, overlap_y , overlap_y , overlap_x , overlap_x , cv2.BORDER_CONSTANT, (0,0,0))
+        image_90_odd2 = cv2.copyMakeBorder(image_90_odd, overlap_y , overlap_y , overlap_x , overlap_x , cv2.BORDER_CONSTANT, (0,0,0))
+        image_135_odd2 = cv2.copyMakeBorder(image_135_odd, overlap_y , overlap_y , overlap_x , overlap_x , cv2.BORDER_CONSTANT, (0,0,0))
+
+        image_0_even2 = cv2.copyMakeBorder(image_0_even, overlap_y , overlap_y , overlap_x , overlap_x , cv2.BORDER_CONSTANT, (0,0,0))
+        image_45_even2 = cv2.copyMakeBorder(image_45_even, overlap_y , overlap_y , overlap_x , overlap_x , cv2.BORDER_CONSTANT, (0,0,0))
+        image_90_even2 = cv2.copyMakeBorder(image_90_even, overlap_y , overlap_y , overlap_x , overlap_x , cv2.BORDER_CONSTANT, (0,0,0))
+        image_135_even2 = cv2.copyMakeBorder(image_135_even, overlap_y , overlap_y , overlap_x , overlap_x , cv2.BORDER_CONSTANT, (0,0,0))
+
+        #complex_cellの応答の計算
+        complex_0 = image_0_even2 ** 2 + image_0_odd2 ** 2
+        complex_45 = image_45_even2 ** 2 + image_45_odd2 ** 2
+        complex_90 = image_90_even2 ** 2 + image_90_odd2 ** 2
+        complex_135 = image_135_even2 ** 2 + image_135_odd2 ** 2
+        #===================================================================================
+
+        #===================================================================================
+        #end_stop作成
+
+        #右向きの弧に次用応答を示すend-stop
+        end_stop_right = image_0_odd - gain * (complex_45[:img_size, -img_size:]  + complex_135[-img_size:,-img_size:])
+        #左向きの弧に次用応答を示すend-stop
+        end_stop_left = image_0_odd - gain * (complex_135[:img_size,:img_size]  + complex_45[-img_size:,:img_size])
+        #上向きの弧に次用応答を示すend-stop
+        end_stop_top = image_90_odd - gain * (complex_45[-img_size:,:img_size]  + complex_135[-img_size:,-img_size:])
+        #下向きの弧に次用応答を示すend-stop
+        end_stop_bottom = image_90_odd - gain * (complex_45[:img_size,-img_size:]  + complex_135[:img_size,:img_size])
+
+        end_stop = []
+        end_stop.append(end_stop_right) ; end_stop.append(end_stop_left)
+        end_stop.append(end_stop_top) ; end_stop.append(end_stop_bottom)
+        #===================================================================================
+
+        return end_stop
+
+
+
+#=============================================================#
+    #            　　　End_stop_cell作成を行う関数
+    #=============================================================#
+        
+        # #===================================================================================
+        # # simple_cell作成
+        # for i in range(len(self.theta)):
+        #     image_odd_s.append(cv2.filter2D(src=img, ddepth=cv2.CV_32F, kernel=np.array((self.gabor_dic["odd"])[i])))
+        #     image_even_s.append(cv2.filter2D(src=img, ddepth=cv2.CV_32F, kernel=np.array((self.gabor_dic["even"])[i])))
+        # #===================================================================================
+
+
+
+        # #===================================================================================
+        # # complex_cell作成
+        # for i in range(len(self.theta)):
+        #     image_odd.append(cv2.filter2D(src=img, ddepth=cv2.CV_32F, kernel=np.array((self.gabor_dic_complex["odd"])[i])))
+        #     image_even.append(cv2.filter2D(src=img, ddepth=cv2.CV_32F, kernel=np.array((self.gabor_dic_complex["even"])[i])))
+        #     # image_odd.append(apply_filter(img,np.array((self.gabor_dic_complex["odd"])[i])))
+        #     # image_even.append(apply_filter(img,np.array((self.gabor_dic_complex["even"])[i])))
+
+
+        #     # パディングの追加（必要に応じて境界効果を軽減するための設定を調整）
+        #     padding_odd.append(cv2.copyMakeBorder(image_odd[i], overlap_y , overlap_y , overlap_x , overlap_x , cv2.BORDER_CONSTANT, (0,0,0)))
+        #     padding_even.append(cv2.copyMakeBorder(image_even[i], overlap_y , overlap_y , overlap_x , overlap_x , cv2.BORDER_CONSTANT, (0,0,0)))
+        #     c_cell.append(padding_odd[i] ** 2 + padding_even[i] ** 2)
+        
+        
+        # ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+        # simple_cell作成
+        # for i in range(len(self.theta)):
+        #     image_odd_s.append(convolution2d(img, np.array((self.gabor_dic["odd"])[i]), padding_type='reflect'))
+        #     image_even_s.append(convolution2d(img, np.array((self.gabor_dic["even"])[i]), padding_type='reflect'))
+            
+        #     normalized_image_odd = cv2.normalize(image_odd_s, None, 0, 255, cv2.NORM_MINMAX)
+        #     normalized_image_even = cv2.normalize(image_even_s, None, 0, 255, cv2.NORM_MINMAX)
+    
+        #     # 結果を保存
+        #     image_odd_s.append(normalized_image_odd)
+        #     image_even_s.append(normalized_image_even)
+
+        # # complex_cell作成
+        # for i in range(len(self.theta)):
+        #     image_odd.append(convolution2d(img, np.array((self.gabor_dic_complex["odd"])[i]), padding_type='reflect'))
+        #     image_even.append(convolution2d(img, np.array((self.gabor_dic_complex["even"])[i]), padding_type='reflect'))
+    
+        #     padding_odd.append(np.pad(image_odd[i], ((overlap_y, overlap_y), (overlap_x, overlap_x)), mode='constant', constant_values=0))
+        #     padding_even.append(np.pad(image_even[i], ((overlap_y, overlap_y), (overlap_x, overlap_x)), mode='constant', constant_values=0))
+        #     c_cell.append(padding_odd[i] ** 2 + padding_even[i] ** 2)
+
+
+        # image_odd = np.array(image_odd)
+        # image_even = np.array(image_even)
+        # image_odd_s = np.array(image_odd_s)
+        # image_even_s = np.array(image_even_s)
+        # padding_odd = np.array(padding_odd)
+        # padding_even = np.array(padding_even)
+        # c_cell = np.array(c_cell)
+        
+        
+
+        
