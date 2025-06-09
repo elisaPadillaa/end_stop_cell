@@ -177,7 +177,7 @@ if __name__ == "__main__":
     # Example: Draw a circle with a diameter of 50 on an image with img_size=200
     img_size = 200
 
-    img = cv2.imread("circle/circle_3.png", cv2.IMREAD_GRAYSCALE)
+    img = cv2.imread("circle/zoro.png", cv2.IMREAD_GRAYSCALE)
 
     # Resize img to img_size x img_size
     img = cv2.resize(img, (img_size, img_size))
