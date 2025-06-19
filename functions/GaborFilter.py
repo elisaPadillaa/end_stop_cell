@@ -43,7 +43,7 @@ def FeatureExtraction(img: np.ndarray, sigma: int, theta: int, gaborType: str, s
         Input image
 
     sigma: int (Values between 2 and 10)
-        Standard deviation of Gaussian
+        Standard deviation of Gaussian (how wide the curve is)
         We define the value of the standard deviation as follows
         Set value: Actual value
           2: 2.201,
@@ -60,7 +60,9 @@ def FeatureExtraction(img: np.ndarray, sigma: int, theta: int, gaborType: str, s
         Orientation of the line to be extracted
 
     gaborType: list(string) (Either "Odd", "Even")
-        Change the phase
+        Change the phase (even: cos wave, odd: sin wave)
+        even (cos) dectect lines or bars (thin stripe dark or light surrounded by opposite)
+        odd (sin) detect edges (transitions between light and dark)
 
     Return
     ----------
@@ -75,11 +77,12 @@ def FeatureExtraction(img: np.ndarray, sigma: int, theta: int, gaborType: str, s
     imOutput = Gaussian_func_new(
         np.squeeze(
             GaborFilter(
-                img[np.newaxis, :, :], theta, gaborType, sigma, sGain=sGain, sAspect=sAspect
+                img[np.newaxis, :, :], #newaxis just adds another dimension 
+                theta, gaborType, sigma, sGain=sGain, sAspect=sAspect 
             ),
             0,
         ),
-        sigma,
+        sigma
     )
 
     return imOutput

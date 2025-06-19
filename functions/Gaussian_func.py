@@ -95,7 +95,7 @@ def Gaussian_func(imInput, sNumOfFilter):
     return imOutputFLOAT
 
 
-def Gaussian_func_new(imInput, sNumOfFilter):
+def Gaussian_func_new(imInput, sNumOfFilter): #efficient 2D Gaussian Function
     imTempFloat64 = imInput.copy().astype(np.float64)
 
     sWeight00 = 10

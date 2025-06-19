@@ -195,7 +195,7 @@ if __name__ == "__main__":
     # 10: 35.941
     simple_cell_Params = {
         'AR' : 2, #aspect ratio
-        'sigma_x' : 3,
+        'sigma_x' : 3, #width?
     }
 
     complex_cell_params = {
@@ -205,8 +205,8 @@ if __name__ == "__main__":
 
     end_stop_Params = {
         'gain' : 2.5 ,
-        'overlap_x' : 3,
-        'overlap_y' : 1
+        'overlap_x' : 3, #no use
+        'overlap_y' : 1 #no use
     }
 
     overlap_dic = {
