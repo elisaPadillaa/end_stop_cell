@@ -5,6 +5,8 @@ import sys
 from PIL import Image, ImageDraw
 from scipy.ndimage import convolve
 
+from functions.GaborFilter import FeatureExtraction
+
 plt.rcParams['font.family'] = 'Meiryo'
 
 #=================================================#
@@ -106,3 +108,33 @@ def apply_filter(image, filter_kernel):
     
     # print(np.max(filtered_image),np.min(filtered_image))
     return filtered_image
+
+def filter_img(img, s_cell):
+    theta = [0, 45 , 90 , 135]
+    simple_odd = [] 
+    simple_even = []
+    filtered_img = []
+    threshold = 200
+
+    """ Calculate Gabor's response """
+
+    for i in theta:
+        # Calculation of response of simple_cell
+        filtered_image_odd = FeatureExtraction(img, s_cell["sigma_x"], i ,"Odd", s_cell["AR"])      #sigma_x = 3 s_cell = 2
+        filtered_image_even = FeatureExtraction(img, s_cell["sigma_x"], i ,"Even", s_cell["AR"])    #sigma_x = 3 s_cell = 2
+
+        # append results
+        simple_odd.append(filtered_image_odd)
+        simple_even.append(filtered_image_even)
+
+    # Convert to np array
+    simple_odd = np.array(simple_odd) 
+    simple_even = np.array(simple_even)
+    # print(simple_even.shape)
+
+    # set binary
+    avg_img = (simple_odd + simple_even) / 2
+    img_norm = ((avg_img - avg_img.min()) / (avg_img.max() - avg_img.min()) * 255).astype(np.uint8)
+    binary_img = np.where(img_norm > threshold, 1, 0).astype(np.uint8)
+
+    return binary_img

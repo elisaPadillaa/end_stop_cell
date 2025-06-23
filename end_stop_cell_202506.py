@@ -199,7 +199,7 @@ if __name__ == "__main__":
     }
 
     complex_cell_params = {
-        'AR' : 3,
+        'AR' : 4,
         'sigma_x' : 3,
     }
 
