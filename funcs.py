@@ -120,21 +120,20 @@ def filter_img(img, s_cell):
 
     for i in theta:
         # Calculation of response of simple_cell
-        filtered_image_odd = FeatureExtraction(img, s_cell["sigma_x"], i ,"Odd", s_cell["AR"])      #sigma_x = 3 s_cell = 2
+        # filtered_image_odd = FeatureExtraction(img, s_cell["sigma_x"], i ,"Odd", s_cell["AR"])      #sigma_x = 3 s_cell = 2
         filtered_image_even = FeatureExtraction(img, s_cell["sigma_x"], i ,"Even", s_cell["AR"])    #sigma_x = 3 s_cell = 2
 
         # append results
-        simple_odd.append(filtered_image_odd)
+        # simple_odd.append(filtered_image_odd)
         simple_even.append(filtered_image_even)
 
     # Convert to np array
-    simple_odd = np.array(simple_odd) 
+    # simple_odd = np.array(simple_odd) 
     simple_even = np.array(simple_even)
-    # print(simple_even.shape)
+    avg_img = simple_even
 
-    # set binary
-    avg_img = (simple_odd + simple_even) / 2
+    # # set binary
     img_norm = ((avg_img - avg_img.min()) / (avg_img.max() - avg_img.min()) * 255).astype(np.uint8)
     binary_img = np.where(img_norm > threshold, 1, 0).astype(np.uint8)
 
-    return binary_img
+    return simple_even
