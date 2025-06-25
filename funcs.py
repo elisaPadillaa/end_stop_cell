@@ -1,3 +1,4 @@
+import math
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -137,3 +138,11 @@ def filter_img(img, s_cell):
     binary_img = np.where(img_norm > threshold, 1, 0).astype(np.uint8)
 
     return simple_even
+
+def rotate_point_around_center(x, y, x0, y0, angle_deg):
+        angle_rad = math.radians(angle_deg)
+        dx = x - x0
+        dy = y - y0
+        x_rot = math.cos(angle_rad) * dx - math.sin(angle_rad) * dy + x0
+        y_rot = math.sin(angle_rad) * dx + math.cos(angle_rad) * dy + y0
+        return x_rot, y_rot
