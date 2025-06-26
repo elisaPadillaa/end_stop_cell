@@ -14,6 +14,11 @@ class SCell():
         # print (self.angle)
 
     def get_response(self, image, x0, y0):
+        patch = self.get_patch(image, x0, y0)
+        patch = torch.clamp(patch, min=0)
+        return patch.sum()
+    
+    def get_patch(self, image, x0, y0):
         """
         image: torch tensor [H, W] (filtered image)
         center: (x, y) position in pixels (float or int)
@@ -42,7 +47,15 @@ class SCell():
         grid = F.affine_grid(theta, size=(1, 1, h, w), align_corners=True) #shape = (batch, channel, height, width)
         patch = F.grid_sample(image.unsqueeze(0).unsqueeze(0), grid, align_corners=True)[0, 0]
 
-        return patch.sum(), patch
+        return patch
+    
+    def plot_points(self, x0, y0):
+        points = [(x0, y0)] 
+        offsets = [self.height / 2, -self.height / 2]
+        for dy in offsets:
+            x_rot, y_rot = funcs.rotate_point_around_center(x0, y0 + dy, x0, y0, self.angle_raw)
+            points.append((x_rot, y_rot))
+        return points
 
 
 class CCells() :
@@ -69,11 +82,18 @@ class CCells() :
 
     def get_response(self, image, x0, y0):
         centers = self.get_centers(x0, y0)
+        left_response = 0
+        right_response = 0
+        for i, group in enumerate(centers):     
+            for x, y in group:  
+                c_cell_response = self.s_cell.get_response(image, x, y)
+                if i == 0: left_response += c_cell_response
+                else: right_response += c_cell_response
 
-        return
-    
+        return left_response, right_response
+
+
     def get_centers(self, x0, y0):
-        centers_main = []
         centers = []
         s_cell_angle = self.s_cell.angle
         d = (self.s_cell.height / 2) + (self.height / 2) - self.overlap
@@ -96,13 +116,12 @@ class CCells() :
             # Rotate around midpoint
             x_rot, y_rot = funcs.rotate_point_around_center(x_center, y_center, x_mid, y_mid, sign * self.angle)
 
-            # centers.append((x_center, y_center))
-            centers_main.append((x_rot, y_rot))
+            # Generate all the other centers around the initial point
+            generation_angle = 90 + -sign * self.angle + s_cell_angle
+            centers.append(self.generate_points((x_rot, y_rot), self.num_s_cells, self.width/2, generation_angle))  
 
-        for i, points in enumerate(centers_main):
-            sign = 1 if i == 0 else -1
-            centers.append(self.generate_points(points, self.num_s_cells, self.width/2,  s_cell_angle + sign * self.angle))  
 
+       
         return centers  # returns [left_center, right_center]
 
     def generate_points(self, center, num_points, distance, angle):
