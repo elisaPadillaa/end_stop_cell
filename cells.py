@@ -14,8 +14,9 @@ class SCell():
         # print (self.angle)
 
     def get_response(self, image, x0, y0):
-        patch = self.get_patch(image, x0, y0) 
-        return patch.sum().item()
+        # patch = self.get_patch(image, x0, y0) 
+        # return patch.sum().item()
+        return image[int(x0), int(y0)]
     
     def get_patch(self, image, x0, y0):
         """
@@ -80,7 +81,7 @@ class CCells() :
         else: self.height = height
 
     def get_response(self, image, x0, y0):
-        centers = self.get_centers(x0, y0)
+        centers = self.get_centers(x0, y0, image)
         left_response = 0
         right_response = 0
         for i, group in enumerate(centers):     
@@ -98,7 +99,7 @@ class CCells() :
         return 1
 
 
-    def get_centers(self, x0, y0):
+    def get_centers(self, x0, y0, image):
         centers = []
         s_cell_angle = self.s_cell.angle
         d = (self.s_cell.height / 2) + (self.height / 2) - self.overlap
@@ -123,13 +124,45 @@ class CCells() :
 
             # Generate all the other centers around the initial point
             generation_angle = 90 + -sign * self.angle + s_cell_angle
-            centers.append(self.generate_points((x_rot, y_rot), self.num_s_cells, self.width/2, generation_angle))  
+            centers.append(self.generate_points((x_rot, y_rot), self.num_s_cells, self.width/2, generation_angle, image.shape))  
 
 
        
         return centers  # returns [left_center, right_center]
+    
+    # def get_centers_double(self, x0, y0, angles):
+    #     centers = []
+    #     s_cell_angle = self.s_cell.angle
+    #     d = (self.s_cell.height / 2) + (self.height / 2) - self.overlap
+        
+    #     # For both sides
+    #     for sign in [(1), (-1)]:
+    #         # Move center to the side
+    #         x_center, y_center = self.add_distance(x0, y0, sign * d, s_cell_angle)
 
-    def generate_points(self, center, num_points, distance, angle):
+    #         # Get edge of simple cell
+    #         x_s_edge, y_s_edge = self.add_distance(x0, y0, sign * (self.s_cell.height / 2), s_cell_angle)
+
+    #         # Get edge of complex cell (backwards from center)
+    #         x_c_edge, y_c_edge = self.add_distance(x_center, y_center, -sign * (self.height / 2), s_cell_angle)
+
+    #         # Midpoint
+    #         x_mid = (x_s_edge + x_c_edge) / 2
+    #         y_mid = (y_s_edge + y_c_edge) / 2
+
+    #         for angle in angles: #must be [angle, angle + 180]
+    #             # Rotate around midpoint
+    #             x_rot, y_rot = funcs.rotate_point_around_center(x_center, y_center, x_mid, y_mid, sign * angle)
+
+    #             # Generate all the other centers around the initial point
+    #             generation_angle = 90 + -sign * angle + s_cell_angle
+    #             centers.append(self.generate_points((x_rot, y_rot), self.num_s_cells, self.width/2, generation_angle))  
+
+
+       
+    #     return centers  # returns [left_center, right_center]
+
+    def generate_points(self, center, num_points, distance, angle, image_shape):
         cx, cy = center
         angle_rad = math.radians(angle)
         
@@ -143,10 +176,16 @@ class CCells() :
             offset_range = [i + 0.5 for i in range(-half, half)]
         
         points = []
+        max_y, max_x = image_shape
         for offset in offset_range:
             dx = offset * distance * math.cos(angle_rad)
             dy = offset * distance * -math.sin(angle_rad)
-            points.append((cx + dx, cy + dy))
+            # points.append((cx + dx, cy + dy))
+            x = cx + dx
+            y = cy + dy
+
+            if 0 <= int(x) < max_x and 0 <= int(y) < max_y:
+                points.append((x, y))
 
         return points
 

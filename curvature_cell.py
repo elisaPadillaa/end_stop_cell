@@ -1,4 +1,5 @@
 from end_stop_cell import *
+from cells import SCell
 
 
 class CurvatureCell():
@@ -24,6 +25,12 @@ class CurvatureCell():
         self.c_cell_width = c_cell_width
         self.c_cell_height = c_cell_height
 
+        self.simple_cell = SCell(
+            self.s_cell_width,
+            self.s_cell_height,
+            self.esc_angle
+        )
+
         self.end_stopped_cell = DegreeCurveESCell(
             self.s_cell_width,
             self.s_cell_height, 
@@ -34,6 +41,7 @@ class CurvatureCell():
             self.c_cell_angle,
             self.c_cell_width,
             self.c_cell_height,
+            self.simple_cell,
         )
 
         self.sign_curve_cells = SignCurveESCell(
@@ -46,12 +54,14 @@ class CurvatureCell():
             self.c_cell_angle,
             self.c_cell_width,
             self.c_cell_height,
+            self.simple_cell,
         )
 
 
     def get_response(self, image, x0, y0):
-        sign_cell_pos_resp, sign_cell_neg_resp = self.sign_curve_cells.get_response(image, x0, y0)
-        esc_resp = self.end_stopped_cell.get_response(image, x0, y0)
+        s_cell_resp = self.simple_cell.get_response(image, x0, y0)
+        sign_cell_pos_resp, sign_cell_neg_resp = self.sign_curve_cells.get_response(image, x0, y0, s_cell_resp)
+        esc_resp = self.end_stopped_cell.get_response(image, x0, y0, s_cell_resp)
         pos_resp = []
         neg_resp = []
 
