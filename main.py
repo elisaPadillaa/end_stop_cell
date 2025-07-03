@@ -65,45 +65,11 @@ def visualize_points():
 
     plt.show()
 
-def visualize_end_stopped_cell(img, data):
-    values = [(0, 0), (45, 1), (90, 2), (135, 3)]
-    for coord, cell_type in data:
-        fig, axes = plt.subplots(1, 5 , figsize=(15, 5))
-        c_x, c_y = coord
-        for i, (angle, img_n) in enumerate(values):
-            params = {
-                "s_cell_width": 5,
-                "s_cell_height": 20,
-                "esc_angle": angle,
-                "c_cell_overlap": 5,
-                "num_c_cells": 5,
-                "gains": [1.0, 0.8, 0.8],
-            }
-            esc_cell = cell_type(**params)
-            if img_n == 2: grid = esc_cell.s_cell.get_patch(img[img_n], c_x,c_y)
-            axes[img_n].imshow(img[img_n] , cmap='gray')
-            axes[i].set_title(f'{angle}º')
-            points = esc_cell.plot_points(c_x, c_y)
-            resp = esc_cell.get_response(img[img_n], c_x, c_y)
-            print(f"result = {resp}")
-            for x, y in points:
-                # color = 'ro' if j == 0 else 'yo'
-                axes[img_n].plot(x, y, 'ro', markersize=1.5)
-
-        min = img.min()
-        max = img.max()
-        axes[4].imshow(grid , cmap='gray', vmin = min, vmax = max)
-        axes[4].set_title('grid')
-
-    plt.show()
-
-
-
-
-if __name__ == "__main__":
+def visualize_end_stopped_cell():
     img_size = 200
 
     img = cv2.imread("circle/suji.png", cv2.IMREAD_GRAYSCALE)
+    theta = [0, 45 , 90 , 135]
 
     # Resize img to img_size x img_size
     img = cv2.resize(img, (img_size, img_size))
@@ -113,9 +79,66 @@ if __name__ == "__main__":
         'sigma_x' : 2, #more or less defined
     }
 
-    filtered_img = filter_img(img, simple_cell_Params)
-    data = [((74, 76), DegreeCurveESCell), ((80, 80), SignCurveESCell)]
-    visualize_end_stopped_cell(filtered_img, data)
+    filtered_img = filter_img(img, simple_cell_Params, theta)
+    data = [((74, 76), DegreeCurveESCell), ((30, 83), SignCurveESCell)]
+    
+    values = [(0, 0), (45, 1), (90, 2), (135, 3)]
+    for coord, cell_type in data:
+        fig, axes = plt.subplots(1, 5 , figsize=(15, 5))
+        c_x, c_y = coord
+        for i, (angle, img_n) in enumerate(values):
+            params = {
+                "s_cell_width": 3,
+                "s_cell_height": 15,
+                "esc_angle": angle,
+                "c_cell_overlap": 5,
+                "num_c_cells": 5,
+                "gains": [1.0, 0.8, 0.8],
+            }
+            esc_cell = cell_type(**params)
+            if img_n == 2: grid = esc_cell.s_cell.get_patch(filtered_img[img_n], c_x,c_y)
+            axes[img_n].imshow(filtered_img[img_n] , cmap='gray')
+            axes[i].set_title(f'{angle}º')
+            points = esc_cell.plot_points(c_x, c_y)
+            print(np.array(points).shape)
+
+            resp = esc_cell.get_response(filtered_img[img_n], c_x, c_y)
+            if isinstance(esc_cell, SignCurveESCell): resp = str(resp[0]) + " - " + str(resp[1])
+            print(f"result = {resp}")
+            for l, (x, y) in enumerate(points):
+                color = 'ro'
+                color = 'ro' if  l < 13 else 'yo'
+                axes[img_n].plot(x, y, color, markersize=1.5)
+
+        min = filtered_img.min()
+        max = filtered_img.max()
+        axes[4].imshow(grid , cmap='gray', vmin = min, vmax = max)
+        axes[4].set_title('grid')
+
+    plt.show()
+
+def visualize_esc_responses():
+    img_size = 200
+
+    img = cv2.imread("circle/suji.png", cv2.IMREAD_GRAYSCALE)
+    theta = [0, 45 , 90 , 135]
+
+    # Resize img to img_size x img_size
+    img = cv2.resize(img, (img_size, img_size))
+
+    simple_cell_Params = {
+        'AR' : 2, #aspect ratio
+        'sigma_x' : 2, #more or less defined
+    }
+
+    filtered_img = filter_img(img, simple_cell_Params, theta)
+    data = [((74, 76), DegreeCurveESCell), ((30, 83), SignCurveESCell)]
+    fig, axes = plt.subplots(2, 4, figsize=(16, 8))
+
+
+
+if __name__ == "__main__":
+    visualize_end_stopped_cell()
     
     # visualize_points()
 

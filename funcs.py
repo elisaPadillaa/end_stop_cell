@@ -110,8 +110,7 @@ def apply_filter(image, filter_kernel):
     # print(np.max(filtered_image),np.min(filtered_image))
     return filtered_image
 
-def filter_img(img, s_cell):
-    theta = [0, 45 , 90 , 135]
+def filter_img(img, s_cell, theta):
     simple_odd = [] 
     simple_even = []
     filtered_img = []
@@ -146,3 +145,7 @@ def rotate_point_around_center(x, y, x0, y0, angle_deg):
         x_rot = math.cos(angle_rad) * dx - math.sin(angle_rad) * dy + x0
         y_rot = math.sin(angle_rad) * dx + math.cos(angle_rad) * dy + y0
         return x_rot, y_rot
+
+def rectification_func(value):
+     if value < 0: value = 0
+     return value

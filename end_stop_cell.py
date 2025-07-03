@@ -1,4 +1,5 @@
 from cells import *
+from funcs import rectification_func
 
 
 class EndstopCell:
@@ -39,7 +40,7 @@ class EndstopCell:
     
     def get_response(self, image, x0, y0):
         s_cell_gain, cL_cell_gain, cR_cell_gain = self.gains
-        s_cell_resp = self.s_cell.get_response(image, x0, y0)
+        s_cell_resp = funcs.rectification_func(self.s_cell.get_response(image, x0, y0))
         c_cell_respL, c_cell_respR = self.c_cells.get_response(image, x0, y0)
         esc_resp = s_cell_gain * s_cell_resp - (cL_cell_gain * c_cell_respL + cR_cell_gain * c_cell_respR)
         return esc_resp
@@ -84,6 +85,7 @@ class DegreeCurveESCell(EndstopCell):
     
     def rectification_func(self, resp):
         scaling = self.scaling_param
+        return resp
         return (1 - math.e ** (-resp / scaling)) / 1 + (1 / self.gamma * math.e ** (-resp / scaling))
     
 class SignCurveESCell(EndstopCell):
@@ -147,7 +149,7 @@ class SignCurveESCell(EndstopCell):
         return combine
 
     def get_response(self, image, x0, y0):
-        pos_esc_resp = self.pos_esc.get_response(image, x0, y0)
-        neg_esc_resp = self.neg_esc.get_response(image, x0, y0)
+        pos_esc_resp = funcs.rectification_func(self.pos_esc.get_response(image, x0, y0))
+        neg_esc_resp = funcs.rectification_func(self.neg_esc.get_response(image, x0, y0))
         return pos_esc_resp, neg_esc_resp
     

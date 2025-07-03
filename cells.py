@@ -14,9 +14,8 @@ class SCell():
         # print (self.angle)
 
     def get_response(self, image, x0, y0):
-        patch = self.get_patch(image, x0, y0)
-        patch = torch.clamp(patch, min=0)
-        return patch.sum()
+        patch = self.get_patch(image, x0, y0) 
+        return patch.sum().item()
     
     def get_patch(self, image, x0, y0):
         """
@@ -87,10 +86,16 @@ class CCells() :
         for i, group in enumerate(centers):     
             for x, y in group:  
                 c_cell_response = self.s_cell.get_response(image, x, y)
-                if i == 0: left_response += c_cell_response
-                else: right_response += c_cell_response
+                c_cell_response = funcs.rectification_func(c_cell_response)
+                weight = self.calculate_weight()
+                if i == 0: left_response += c_cell_response * weight
+                else: right_response += c_cell_response * weight
 
         return left_response, right_response
+    
+    def calculate_weight(self):
+        # complete
+        return 1
 
 
     def get_centers(self, x0, y0):
