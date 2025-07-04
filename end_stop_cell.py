@@ -51,6 +51,9 @@ class EndstopCell:
         s_cell_resp = funcs.rectification_func(s_cell_resp)
         c_cell_respL, c_cell_respR = self.c_cells.get_response(image, x0, y0)
         esc_resp = s_cell_gain * s_cell_resp - (cL_cell_gain * c_cell_respL + cR_cell_gain * c_cell_respR)
+
+        # if(x0 == 99 and y0== 55):
+        #     print(f"{s_cell_resp} - ({c_cell_respL} + {c_cell_respR})")
         return esc_resp
 
         
@@ -160,10 +163,11 @@ class SignCurveESCell(EndstopCell):
         b = np.array(neg_points).reshape(-1,2)
 
         combine = np.concatenate([a, b], axis = 0)
-        return combine
+        return a, b
     
     def get_response(self, image, x0, y0, s_cell_resp = None):
         pos_esc_resp = funcs.rectification_func(self.pos_esc.get_response(image, x0, y0, s_cell_resp))
         neg_esc_resp = funcs.rectification_func(self.neg_esc.get_response(image, x0, y0, s_cell_resp))
+        
         return pos_esc_resp, neg_esc_resp
     

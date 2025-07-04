@@ -16,7 +16,10 @@ class SCell():
     def get_response(self, image, x0, y0):
         # patch = self.get_patch(image, x0, y0) 
         # return patch.sum().item()
-        return image[int(x0), int(y0)]
+        # if y0== 86 and x0 == 39:
+        #     print(image[int(x0), int(y0)])
+        
+        return image[int(y0), int(x0)]
     
     def get_patch(self, image, x0, y0):
         """
@@ -89,8 +92,8 @@ class CCells() :
                 c_cell_response = self.s_cell.get_response(image, x, y)
                 c_cell_response = funcs.rectification_func(c_cell_response)
                 weight = self.calculate_weight()
-                if i == 0: left_response += c_cell_response * weight
-                else: right_response += c_cell_response * weight
+                if i == 0: left_response += (c_cell_response * weight)
+                else: right_response += (c_cell_response * weight)
 
         return left_response, right_response
     
@@ -125,10 +128,44 @@ class CCells() :
             # Generate all the other centers around the initial point
             generation_angle = 90 + -sign * self.angle + s_cell_angle
             centers.append(self.generate_points((x_rot, y_rot), self.num_s_cells, self.width/2, generation_angle, image.shape))  
-
-
-       
+  
         return centers  # returns [left_center, right_center]
+    
+
+    def generate_points(self, center, num_points, distance, angle, image_shape):
+        cx, cy = center
+        angle_rad = math.radians(angle)
+        max_y, max_x = image_shape  # Note: y = rows, x = cols
+
+        # Calculate offset indices
+        if num_points % 2 == 1:
+            offset_range = range(-(num_points // 2), num_points // 2 + 1)
+        else:
+            half = num_points // 2
+            offset_range = [i + 0.5 for i in range(-half, half)]
+
+        points = []
+        for offset in offset_range:
+            dx = offset * distance * math.cos(angle_rad)
+            dy = offset * distance * -math.sin(angle_rad)
+
+            x = cx + dx
+            y = cy + dy
+
+            x_clamped = min(max(0, int(round(x))), max_x - 1)
+            y_clamped = min(max(0, int(round(y))), max_y - 1)
+
+            points.append((x_clamped, y_clamped))
+
+        return points
+
+
+    def add_distance(self, x, y, d, angle):
+        angle_rad = math.radians(angle)  # convert to radians
+        x_new = x + d * math.cos(angle_rad)
+        y_new = y - d * math.sin(angle_rad)
+        return x_new, y_new
+    
     
     # def get_centers_double(self, x0, y0, angles):
     #     centers = []
@@ -161,40 +198,6 @@ class CCells() :
 
        
     #     return centers  # returns [left_center, right_center]
-
-    def generate_points(self, center, num_points, distance, angle, image_shape):
-        cx, cy = center
-        angle_rad = math.radians(angle)
-        
-        # Calculate offset indices
-        if num_points % 2 == 1:
-            # Odd: symmetric around center, includes (0, 0)
-            offset_range = range(-(num_points // 2), num_points // 2 + 1)
-        else:
-            # Even: symmetric, but no point exactly at center
-            half = num_points // 2
-            offset_range = [i + 0.5 for i in range(-half, half)]
-        
-        points = []
-        max_y, max_x = image_shape
-        for offset in offset_range:
-            dx = offset * distance * math.cos(angle_rad)
-            dy = offset * distance * -math.sin(angle_rad)
-            # points.append((cx + dx, cy + dy))
-            x = cx + dx
-            y = cy + dy
-
-            if 0 <= int(x) < max_x and 0 <= int(y) < max_y:
-                points.append((x, y))
-
-        return points
-
-
-    def add_distance(self, x, y, d, angle):
-        angle_rad = math.radians(angle)  # convert to radians
-        x_new = x + d * math.cos(angle_rad)
-        y_new = y - d * math.sin(angle_rad)
-        return x_new, y_new
     
 
 
