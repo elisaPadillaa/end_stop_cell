@@ -119,11 +119,11 @@ def visualize_end_stopped_cell():
 
     plt.show()
 
-def visualize_esc_responses():
+def visualize_esc_responses(use_img):
     img_size = 200
 
     # img = cv2.imread("circle/circles_1.png", cv2.IMREAD_GRAYSCALE)
-    img = cv2.imread("circle/nine.png", cv2.IMREAD_GRAYSCALE)
+    img = cv2.imread(use_img, cv2.IMREAD_GRAYSCALE)
     theta = [0, 45 , 90 , 135]
 
     # Resize img to img_size x img_size
@@ -131,7 +131,7 @@ def visualize_esc_responses():
 
     simple_cell_Params = {
         'AR' : 2, #aspect ratio
-        'sigma_x' : 2, #more or less defined
+        'sigma_x' : 6, #more or less defined
     }
 
     filtered_img = filter_img(img, simple_cell_Params, theta)
@@ -142,12 +142,12 @@ def visualize_esc_responses():
     axis_2 = show_filtered_img(filtered_img)
 
     for i, angle in enumerate(theta):
-        simple_cell = SCell(8, 24, angle)
+        simple_cell = SCell(10, 40, angle)
         params = {
                 "s_cell_width": simple_cell.width,
                 "s_cell_height": simple_cell.height,
                 "esc_angle": angle,
-                "c_cell_overlap": 4,
+                "c_cell_overlap": 8,
                 "num_c_cells": 5,
                 "gains": [1.0, 1.8, 1.8],
                 # "s_cell": simple_cell
@@ -204,7 +204,7 @@ def visualize_esc_responses():
         print(f'{angle} finshed')
 
 
-    plt.show()
+    # plt.show()
 
 def show_filtered_img(imgs):
     fig, axes = plt.subplots(1, 4 , figsize=(20, 4))
@@ -218,9 +218,13 @@ def show_filtered_img(imgs):
 
 if __name__ == "__main__":
     # visualize_end_stopped_cell()
-    visualize_esc_responses()
+    imgs = ["0.png", "1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png", "8.png", "9.png"]
+    # imgs = ["0.png"]
+    for img in imgs:
+        visualize_esc_responses(f"circle/{img}")
     
     # visualize_points()
+    plt.show()
 
 
 
