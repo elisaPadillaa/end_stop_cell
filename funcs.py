@@ -110,7 +110,7 @@ def apply_filter(image, filter_kernel):
     # print(np.max(filtered_image),np.min(filtered_image))
     return filtered_image
 
-def filter_img(img, s_cell, theta):
+def filter_img(img, sigma, theta):
     simple_odd = [] 
     simple_even = []
     filtered_img = []
@@ -121,7 +121,7 @@ def filter_img(img, s_cell, theta):
     for i in theta:
         # Calculation of response of simple_cell
         # filtered_image_odd = FeatureExtraction(img, s_cell["sigma_x"], i ,"Odd", s_cell["AR"])      #sigma_x = 3 s_cell = 2
-        filtered_image_even = FeatureExtraction(img, s_cell["sigma_x"], i ,"Even", s_cell["AR"])    #sigma_x = 3 s_cell = 2
+        filtered_image_even = FeatureExtraction(img, sigma, i ,"Even")    #sigma_x = 3 s_cell = 2
 
         # append results
         # simple_odd.append(filtered_image_odd)

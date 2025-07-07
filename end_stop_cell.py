@@ -5,32 +5,28 @@ from funcs import rectification_func
 class EndstopCell:
     def __init__(
             self, 
-            s_cell_width, 
-            s_cell_height, 
+            s_cell_type, 
             esc_angle,
             c_cell_overlap,
             num_c_cells,
             gains,
             c_cell_angle,
-            c_cell_width = None,
-            c_cell_height = None,
+            c_cell_type = None,
             # s_cell = None,
         ):
-        self.s_cell_width = s_cell_width
-        self.s_cell_height = s_cell_height
+        self.s_cell_type = s_cell_type
         self.esc_angle = esc_angle
         self.c_cell_angle = c_cell_angle
         self.c_cell_overlap = c_cell_overlap
         self.num_c_cells = num_c_cells
         self.gains = gains
-        self.c_cell_width = c_cell_width
-        self.c_cell_height = c_cell_height
+        self.c_cell_type = c_cell_type
 
         # if s_cell == None:
-        self.s_cell = SCell(s_cell_width, s_cell_height, esc_angle)
+        self.s_cell = SCell(s_cell_type, esc_angle)
         # else: self.s_cell = s_cell
         
-        self.c_cells = CCells(self.num_c_cells, self.c_cell_overlap, self.c_cell_angle , self.s_cell, self.c_cell_width, self.c_cell_height)
+        self.c_cells = CCells(self.num_c_cells, self.c_cell_overlap, self.c_cell_angle , self.s_cell, self.c_cell_type)
         
 
     def plot_points(self, x0, y0, image):
@@ -60,8 +56,7 @@ class EndstopCell:
 class DegreeCurveESCell(EndstopCell):
     def __init__(
             self, 
-            s_cell_width, 
-            s_cell_height, 
+            s_cell_type, 
             esc_angle, 
             c_cell_overlap, 
             num_c_cells,  
@@ -69,20 +64,17 @@ class DegreeCurveESCell(EndstopCell):
             scaling_param = 1, 
             gamma = 0.01,
             c_cell_angle = 0,
-            c_cell_width=None, 
-            c_cell_height=None,
+            c_cell_type=None, 
             # s_cell = None
         ):
         super().__init__(
-            s_cell_width, 
-            s_cell_height, 
+            s_cell_type, 
             esc_angle,
             c_cell_overlap, 
             num_c_cells, 
             gains, 
             c_cell_angle, 
-            c_cell_width, 
-            c_cell_height,
+            c_cell_type,
             # s_cell
         )
 
@@ -104,54 +96,46 @@ class DegreeCurveESCell(EndstopCell):
 class SignCurveESCell(EndstopCell):
     def __init__(
             self, 
-            s_cell_width, 
-            s_cell_height, 
+            s_cell_type, 
             esc_angle, 
             c_cell_overlap, 
             num_c_cells, 
             gains,
             c_cell_angle = 45, 
-            c_cell_width=None, 
-            c_cell_height=None,
+            c_cell_type=None, 
             # s_cell = None
         ):
 
         super().__init__(
-            s_cell_width, 
-            s_cell_height, 
+            s_cell_type, 
             esc_angle,
             c_cell_overlap, 
             num_c_cells, 
             gains, 
             c_cell_angle, 
-            c_cell_width, 
-            c_cell_height,
+            c_cell_type,
             # s_cell
         )
 
         self.pos_esc = EndstopCell(
-            self.s_cell_width, 
-            self.s_cell_height,  
+            self.s_cell_type,  
             self.esc_angle,
             self.c_cell_overlap, 
             self.num_c_cells, 
             self.gains, 
             self.c_cell_angle,
-            self.c_cell_width, 
-            self.c_cell_height,
+            self.c_cell_type,
             # self.s_cell
         )
 
         self.neg_esc = EndstopCell(
-            self.s_cell_width, 
-            self.s_cell_height,
+            self.s_cell_type,
             self.esc_angle + 180, 
             self.c_cell_overlap, 
             self.num_c_cells,
             self.gains ,
             self.c_cell_angle, 
-            self.c_cell_width, 
-            self.c_cell_height,
+            self.c_cell_type,
             # self.s_cell
         )
 

@@ -6,9 +6,17 @@ import funcs
 
 
 class SCell():
-    def __init__(self, width, height, angle):
-        self.width = width
-        self.height = height
+    gabor_params = {
+        1: {"sigma": 1.482, "lambda": 4},
+        2: {"sigma": 2.201, "lambda": 5.66},
+        3: {"sigma": 3.128, "lambda": 8},  
+        4: {"sigma": 4.467, "lambda": 11.314},
+        5: {"sigma": 6.322, "lambda": 16},
+        6: {"sigma": 8.971, "lambda": 22.327}
+    }
+    def __init__(self, cell_type, angle):
+        self.width = SCell.gabor_params[cell_type]["sigma"] * 2
+        self.height = SCell.gabor_params[cell_type]["lambda"] * 2
         self.angle = (270 - angle) % 360
         self.angle_raw = angle
         # print (self.angle)
@@ -68,20 +76,19 @@ class CCells() :
             overlap, 
             angle,
             s_cell,
-            width = None,
-            height = None,
+            cell_type = None,
         ):
         self.num_s_cells = num_s_cells
         self.overlap = overlap
         self.angle = angle
         self.s_cell = s_cell
 
-        if width == None: 
+        if cell_type == None: 
             self.width = s_cell.width
-        else: self.width = width
-        if height == None: 
+        else: self.width = SCell.gabor_params[cell_type]["sigma"] * 2
+        if cell_type == None: 
             self.height = s_cell.height
-        else: self.height = height
+        else: self.height = SCell.gabor_params[cell_type]["lambda"] * 2
 
     def get_response(self, image, x0, y0):
         centers = self.get_centers(x0, y0, image)

@@ -119,7 +119,7 @@ def visualize_end_stopped_cell():
 
     plt.show()
 
-def visualize_esc_responses(use_img):
+def visualize_esc_responses(use_img, sigma):
     img_size = 200
 
     # img = cv2.imread("circle/circles_1.png", cv2.IMREAD_GRAYSCALE)
@@ -129,12 +129,7 @@ def visualize_esc_responses(use_img):
     # Resize img to img_size x img_size
     img = cv2.resize(img, (img_size, img_size))
 
-    simple_cell_Params = {
-        'AR' : 2, #aspect ratio
-        'sigma_x' : 6, #more or less defined
-    }
-
-    filtered_img = filter_img(img, simple_cell_Params, theta)
+    filtered_img = filter_img(img, sigma, theta)
     fig, axes = plt.subplots(3, 4, figsize=(16, 12))
     degree_img = np.zeros((img_size, img_size), dtype=np.float32)
     pos_sign_img = np.zeros_like(degree_img, dtype=np.float32)
@@ -142,12 +137,11 @@ def visualize_esc_responses(use_img):
     axis_2 = show_filtered_img(filtered_img)
 
     for i, angle in enumerate(theta):
-        simple_cell = SCell(10, 40, angle)
+        simple_cell = SCell(sigma, angle)
         params = {
-                "s_cell_width": simple_cell.width,
-                "s_cell_height": simple_cell.height,
+                "s_cell_type": sigma,
                 "esc_angle": angle,
-                "c_cell_overlap": 8,
+                "c_cell_overlap": 2,
                 "num_c_cells": 5,
                 "gains": [1.0, 1.8, 1.8],
                 # "s_cell": simple_cell
@@ -218,10 +212,10 @@ def show_filtered_img(imgs):
 
 if __name__ == "__main__":
     # visualize_end_stopped_cell()
-    imgs = ["0.png", "1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png", "8.png", "9.png"]
-    # imgs = ["0.png"]
-    for img in imgs:
-        visualize_esc_responses(f"circle/{img}")
+    # imgs = ["0.png", "1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png", "8.png", "9.png"]
+    sigmas = [1, 2, 3, 4, 5, 6]
+    for sigma in sigmas:
+        visualize_esc_responses(f"circle/9.png", sigma)
     
     # visualize_points()
     plt.show()
