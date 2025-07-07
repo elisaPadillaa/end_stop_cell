@@ -11,7 +11,6 @@ class CurvatureCell():
             num_c_cells,
             gains,
             c_cell_angle,
-            c_cell_type = None,
         ):
         self.s_cell_type = s_cell_type
         self.esc_angle = esc_angle
@@ -19,7 +18,6 @@ class CurvatureCell():
         self.c_cell_overlap = c_cell_overlap
         self.num_c_cells = num_c_cells
         self.gains = gains
-        self.c_cell_type = c_cell_type
 
         self.simple_cell = SCell(
             self.s_cell_type,
@@ -33,7 +31,6 @@ class CurvatureCell():
             self.num_c_cells,
             self.gains,
             self.c_cell_angle,
-            self.c_cell_type,
             self.simple_cell,
         )
 
@@ -44,7 +41,6 @@ class CurvatureCell():
             self.num_c_cells,
             self.gains,
             self.c_cell_angle,
-            self.c_cell_type,
             self.simple_cell,
         )
 

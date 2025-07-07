@@ -76,19 +76,13 @@ class CCells() :
             overlap, 
             angle,
             s_cell,
-            cell_type = None,
         ):
         self.num_s_cells = num_s_cells
         self.overlap = overlap
         self.angle = angle
         self.s_cell = s_cell
-
-        if cell_type == None: 
-            self.width = s_cell.width
-        else: self.width = SCell.gabor_params[cell_type]["sigma"] * 2
-        if cell_type == None: 
-            self.height = s_cell.height
-        else: self.height = SCell.gabor_params[cell_type]["lambda"] * 2
+        self.width = s_cell.width
+        self.height = s_cell.height
 
     def get_response(self, image, x0, y0):
         centers = self.get_centers(x0, y0, image)

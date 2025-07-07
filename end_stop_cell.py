@@ -11,8 +11,6 @@ class EndstopCell:
             num_c_cells,
             gains,
             c_cell_angle,
-            c_cell_type = None,
-            # s_cell = None,
         ):
         self.s_cell_type = s_cell_type
         self.esc_angle = esc_angle
@@ -20,13 +18,12 @@ class EndstopCell:
         self.c_cell_overlap = c_cell_overlap
         self.num_c_cells = num_c_cells
         self.gains = gains
-        self.c_cell_type = c_cell_type
 
         # if s_cell == None:
         self.s_cell = SCell(s_cell_type, esc_angle)
         # else: self.s_cell = s_cell
         
-        self.c_cells = CCells(self.num_c_cells, self.c_cell_overlap, self.c_cell_angle , self.s_cell, self.c_cell_type)
+        self.c_cells = CCells(self.num_c_cells, self.c_cell_overlap, self.c_cell_angle , self.s_cell)
         
 
     def plot_points(self, x0, y0, image):
@@ -64,8 +61,6 @@ class DegreeCurveESCell(EndstopCell):
             scaling_param = 1, 
             gamma = 0.01,
             c_cell_angle = 0,
-            c_cell_type=None, 
-            # s_cell = None
         ):
         super().__init__(
             s_cell_type, 
@@ -74,8 +69,6 @@ class DegreeCurveESCell(EndstopCell):
             num_c_cells, 
             gains, 
             c_cell_angle, 
-            c_cell_type,
-            # s_cell
         )
 
         self.scaling_param = scaling_param
@@ -102,8 +95,6 @@ class SignCurveESCell(EndstopCell):
             num_c_cells, 
             gains,
             c_cell_angle = 45, 
-            c_cell_type=None, 
-            # s_cell = None
         ):
 
         super().__init__(
@@ -113,8 +104,6 @@ class SignCurveESCell(EndstopCell):
             num_c_cells, 
             gains, 
             c_cell_angle, 
-            c_cell_type,
-            # s_cell
         )
 
         self.pos_esc = EndstopCell(
@@ -124,8 +113,6 @@ class SignCurveESCell(EndstopCell):
             self.num_c_cells, 
             self.gains, 
             self.c_cell_angle,
-            self.c_cell_type,
-            # self.s_cell
         )
 
         self.neg_esc = EndstopCell(
@@ -135,8 +122,6 @@ class SignCurveESCell(EndstopCell):
             self.num_c_cells,
             self.gains ,
             self.c_cell_angle, 
-            self.c_cell_type,
-            # self.s_cell
         )
 
     def plot_points(self, x0, y0, image):
