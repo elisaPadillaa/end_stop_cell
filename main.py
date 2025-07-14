@@ -215,7 +215,7 @@ if __name__ == "__main__":
     # imgs = ["0.png", "1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png", "8.png", "9.png"]
     sigmas = [1, 2, 3, 4, 5, 6]
     for sigma in sigmas:
-        visualize_esc_responses(f"circle/9.png", sigma)
+        visualize_esc_responses(f"circle/3.png", sigma)
     
     # visualize_points()
     plt.show()
