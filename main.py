@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 from cells import *
+from curvature_cell import CurvatureCell
 from end_stop_cell import *
 from funcs import *
 from scipy.ndimage import convolve
@@ -119,92 +120,57 @@ def visualize_end_stopped_cell():
 
     plt.show()
 
-def visualize_esc_responses(use_img, sigma):
+def visualize_esc_responses(use_img, sigma, curvature_cells):
     img_size = 200
-
-    # img = cv2.imread("circle/circles_1.png", cv2.IMREAD_GRAYSCALE)
     img = cv2.imread(use_img, cv2.IMREAD_GRAYSCALE)
     theta = [0, 45 , 90 , 135]
 
     # Resize img to img_size x img_size
     img = cv2.resize(img, (img_size, img_size))
 
-    filtered_img = filter_img(img, sigma, theta)
+    show_original_img(img)
+
+    filtered_imgs = filter_img(img, sigma, theta)
     fig, axes = plt.subplots(3, 4, figsize=(16, 12))
-    degree_img = np.zeros((img_size, img_size), dtype=np.float32)
-    pos_sign_img = np.zeros_like(degree_img, dtype=np.float32)
-    neg_sign_img = np.zeros_like(degree_img, dtype=np.float32)
-    axis_2 = show_filtered_img(filtered_img)
+    processed_esc_imgs = []
 
-    for i, angle in enumerate(theta):
-        simple_cell = SCell(sigma, angle)
-        params = {
-                "s_cell_type": sigma,
-                "esc_angle": angle,
-                "c_cell_overlap": 2,
-                "num_c_cells": 5,
-                "gains": [1.0, 1.8, 1.8],
-                # "s_cell": simple_cell
-            }
-        degree_esc = DegreeCurveESCell(**params)
-        sign_escs = SignCurveESCell(**params)
-        
-        print(f'{angle} starting')
-        points_d = []
-        points_p_s = []
-        points_n_s = []
+    filtered_imgs = torch.tensor(filtered_imgs, dtype=torch.float32)
 
-        for x in range(filtered_img[i].shape[0]):
-            for y in range(filtered_img[i].shape[1]):
-                s_resp = simple_cell.get_response(filtered_img[i], x,y) 
-                # if y == 1 and x == 2 :
-                #      print(filtered_img[i][x][y])
-                degree_img[y,x] = degree_esc.get_response(filtered_img[i], x, y, s_resp)
-                pos_resp, neg_resp = sign_escs.get_response(filtered_img[i], x, y, s_resp)
-                pos_sign_img[y,x] = pos_resp
-                neg_sign_img[y,x] = neg_resp
+    for ori, cell in curvature_cells:
+        pos_img, neg_img = cell.get_response(filtered_imgs)
+        processed_esc_imgs.append(pos_img)
+        processed_esc_imgs.append(neg_img)
 
-            y, x = np.unravel_index(np.argmax(degree_img), degree_img.shape)
-            points_d = degree_esc.plot_points(x, y, filtered_img[i])
-            y, x = np.unravel_index(np.argmax(pos_sign_img), pos_sign_img.shape)
-            a, b = sign_escs.plot_points(x, y, filtered_img[i])
-            points_p_s = a
-            y, x = np.unravel_index(np.argmax(neg_sign_img), neg_sign_img.shape)
-            a, b = sign_escs.plot_points(x, y, filtered_img[i])
-            points_n_s = b
-        
-        axes[0, i].imshow(degree_img, cmap = 'grey')
-        axes[0, i].set_title(f'degree curv {angle}º')
+    curv = 0
+    for i, img in enumerate(filtered_imgs):
+        axes[0][i].imshow(img , cmap='gray')
+        axes[0][i].set_title(f'Gabor img angle {curv}º')
+        curv += 45
 
-        for l, (x, y) in enumerate(points_d):
-                axes[0, i].plot(x, y, 'ro', markersize=1.5)
-                axis_2[i].plot(x, y, 'ro', markersize=1.5)
-
-        axes[1, i].imshow(pos_sign_img, cmap = 'grey')
-        axes[1, i].set_title(f'pos sign curv {angle}º')
-
-        for l, (x, y) in enumerate(points_p_s):
-                axes[1, i].plot(x, y, 'yo', markersize=1.5)
-                axis_2[i].plot(x, y, 'yo', markersize=1.5)
-
-        axes[2, i].imshow(neg_sign_img, cmap = 'grey')
-        axes[2, i].set_title(f'neg sign curv {angle}º')
-
-        for l, (x, y) in enumerate(points_n_s):
-                color = 'ro'
-                color = 'ro' if  l < 13 else 'yo'
-                axes[2, i].plot(x, y, 'go', markersize=1.5)
-                axis_2[i].plot(x, y, 'go', markersize=1.5)
-        print(f'{angle} finshed')
+    curv = 0
+    for col in range(4):
+        axes[1][col].imshow(processed_esc_imgs[2*col], cmap = 'grey')
+        axes[2][col].imshow(processed_esc_imgs[2*col + 1], cmap = 'grey')
+        axes[1][col].set_title(f'Pos sign curve {curv}º')
+        axes[2][col].set_title(f'Pos sign curve {curv}º')
+        curv += 45
 
 
-    # plt.show()
+
 
 def show_filtered_img(imgs):
     fig, axes = plt.subplots(1, 4 , figsize=(20, 4))
     for i, img in enumerate(imgs):
         axes[i].imshow(img , cmap='gray')
     return axes
+
+
+def show_original_img(img):
+    plt.figure("Original Image")
+    plt.imshow(img, cmap='gray')
+    plt.axis('off')
+    plt.title('Original Image')
+    plt.show(block=False)
 
     
 
@@ -213,11 +179,29 @@ def show_filtered_img(imgs):
 if __name__ == "__main__":
     # visualize_end_stopped_cell()
     # imgs = ["0.png", "1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png", "8.png", "9.png"]
-    sigmas = [1, 2, 3, 4, 5, 6]
-    for sigma in sigmas:
-        visualize_esc_responses(f"circle/3.png", sigma)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    sigma = 6
+    esc_overlap = 5
+    num_c_cells = 5
+    gains = [1.0, 0.8, 0.8]
+    curvature_cell_0 = CurvatureCell(sigma, 0, esc_overlap, num_c_cells, gains, device)
+    curvature_cell_45 = CurvatureCell(sigma, 45, esc_overlap, num_c_cells, gains, device)
+    curvature_cell_90 = CurvatureCell(sigma, 90, esc_overlap, num_c_cells, gains, device)
+    curvature_cell_135 = CurvatureCell(sigma, 135, esc_overlap, num_c_cells, gains, device)
+
+    curvature_cells = [
+        (0, curvature_cell_0),
+        (45, curvature_cell_45),
+        (90, curvature_cell_90),
+        (135, curvature_cell_135),
+    ]
+
+    # for sigma in sigmas:
+    visualize_esc_responses(f"circle/cloud.png", sigma, curvature_cells)
     
     # visualize_points()
+    
     plt.show()
 
 

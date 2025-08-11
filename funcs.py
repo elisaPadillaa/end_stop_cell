@@ -10,30 +10,6 @@ from functions.GaborFilter import FeatureExtraction
 
 plt.rcParams['font.family'] = 'Meiryo'
 
-#=================================================#
-#               フィルタを表示する                 #
-#=================================================#
-# def print_filter(dic = None):
-#     if dic is None:
-#         return
-#     fig, axes = plt.subplots(1, len(dic), figsize=(15, 5))
-
-#     # 各フィルターと結果の表示
-#     axes[0].imshow(dic["gabor_even"], cmap='gray')
-#     axes[0].set_title('Gabor(Even)')
-
-#     axes[1].imshow(dic["gabor_odd"], cmap='gray')
-#     axes[1].set_title('Gabor(Odd)')
-
-#     axes[2].imshow(dic["complex_cell"], cmap='gray')
-#     axes[2].set_title('complex_cell')
-
-#     # 軸を非表示に
-#     for ax in axes:
-#         ax.axis('off')
-#     plt.tight_layout()
-#     return
-
 def create_grayscale_circle_array(size, diameter):
     """
     中心に白い円があるグレースケール画像をNumPy配列として生成します。
@@ -145,7 +121,3 @@ def rotate_point_around_center(x, y, x0, y0, angle_deg):
         x_rot = math.cos(angle_rad) * dx - math.sin(angle_rad) * dy + x0
         y_rot = math.sin(angle_rad) * dx + math.cos(angle_rad) * dy + y0
         return x_rot, y_rot
-
-def rectification_func(value):
-     if value < 0: value = 0
-     return value

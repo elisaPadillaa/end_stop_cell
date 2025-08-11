@@ -1,5 +1,8 @@
-from cells import *
-from funcs import rectification_func
+import numpy as np
+import torch
+
+from cells import CCells, SCell
+
 
 
 class EndstopCell:
@@ -10,7 +13,8 @@ class EndstopCell:
             c_cell_overlap,
             num_c_cells,
             gains,
-            c_cell_angle,
+            c_cell_angle, # This angle is added on to the esc angle 
+            device,
         ):
         self.s_cell_type = s_cell_type
         self.esc_angle = esc_angle
@@ -18,35 +22,25 @@ class EndstopCell:
         self.c_cell_overlap = c_cell_overlap
         self.num_c_cells = num_c_cells
         self.gains = gains
+        self.device = device
 
-        # if s_cell == None:
-        self.s_cell = SCell(s_cell_type, esc_angle)
-        # else: self.s_cell = s_cell
+        
+        self.s_cell = SCell(s_cell_type, esc_angle, device)
         
         self.c_cells = CCells(self.num_c_cells, self.c_cell_overlap, self.c_cell_angle , self.s_cell)
-        
-
-    def plot_points(self, x0, y0, image):
-        centers = self.c_cells.get_centers(x0, y0, image)
-        
-        a = np.array(centers).reshape(-1,2)
-        b = np.array(self.s_cell.plot_points(x0, y0)).reshape(-1,2)
-
-        combine = np.concatenate([a, b], axis = 0)
-        return combine
+        self.points = self.c_cells.get_centers()
+        print()
     
-    def get_response(self, image, x0, y0, s_cell_resp=None):
+    def get_response(self, images, s_cell_resp=None):
         s_cell_gain, cL_cell_gain, cR_cell_gain = self.gains
 
         if s_cell_resp is None:
-            s_cell_resp = self.s_cell.get_response(image, x0, y0)
+            s_cell_resp = self.s_cell.get_response(images)
 
-        s_cell_resp = funcs.rectification_func(s_cell_resp)
-        c_cell_respL, c_cell_respR = self.c_cells.get_response(image, x0, y0)
+        s_cell_resp = torch.clamp(s_cell_resp, min = 0)
+        c_cell_respL, c_cell_respR = self.c_cells.get_response(images, self.points)
         esc_resp = s_cell_gain * s_cell_resp - (cL_cell_gain * c_cell_respL + cR_cell_gain * c_cell_respR)
 
-        # if(x0 == 99 and y0== 55):
-        #     print(f"{s_cell_resp} - ({c_cell_respL} + {c_cell_respR})")
         return esc_resp
 
         
@@ -58,6 +52,7 @@ class DegreeCurveESCell(EndstopCell):
             c_cell_overlap, 
             num_c_cells,  
             gains,
+            device,
             scaling_param = 1, 
             gamma = 0.01,
             c_cell_angle = 0,
@@ -69,20 +64,19 @@ class DegreeCurveESCell(EndstopCell):
             num_c_cells, 
             gains, 
             c_cell_angle, 
+            device,
         )
 
         self.scaling_param = scaling_param
         self.gamma = gamma
 
-    def plot_points(self, x0, y0, image):
-        return super().plot_points(x0, y0, image)
-    
-    def get_response(self, image, x0, y0, s_cell_resp = None):
-        esc_resp = super().get_response(image, x0, y0, s_cell_resp)
+    def get_response(self, images, s_cell_resp = None):
+        esc_resp = super().get_response(images, s_cell_resp)
         return self.rectification_func(esc_resp)
     
     def rectification_func(self, resp):
         scaling = self.scaling_param
+        #COMPLETE use the actual function below
         return resp
         return (1 - math.e ** (-resp / scaling)) / 1 + (1 / self.gamma * math.e ** (-resp / scaling))
     
@@ -94,6 +88,7 @@ class SignCurveESCell(EndstopCell):
             c_cell_overlap, 
             num_c_cells, 
             gains,
+            device,
             c_cell_angle = 45, 
         ):
 
@@ -104,8 +99,10 @@ class SignCurveESCell(EndstopCell):
             num_c_cells, 
             gains, 
             c_cell_angle, 
+            device
         )
 
+        #Positive cell
         self.pos_esc = EndstopCell(
             self.s_cell_type,  
             self.esc_angle,
@@ -113,8 +110,10 @@ class SignCurveESCell(EndstopCell):
             self.num_c_cells, 
             self.gains, 
             self.c_cell_angle,
+            self.device,
         )
 
+        #Negative cell
         self.neg_esc = EndstopCell(
             self.s_cell_type,
             self.esc_angle + 180, 
@@ -122,21 +121,12 @@ class SignCurveESCell(EndstopCell):
             self.num_c_cells,
             self.gains ,
             self.c_cell_angle, 
+            self.device,
         )
-
-    def plot_points(self, x0, y0, image):
-        pos_points = self.pos_esc.plot_points(x0, y0, image)
-        neg_points = self.neg_esc.plot_points(x0, y0, image)
-
-        a = np.array(pos_points).reshape(-1,2)
-        b = np.array(neg_points).reshape(-1,2)
-
-        combine = np.concatenate([a, b], axis = 0)
-        return a, b
     
-    def get_response(self, image, x0, y0, s_cell_resp = None):
-        pos_esc_resp = funcs.rectification_func(self.pos_esc.get_response(image, x0, y0, s_cell_resp))
-        neg_esc_resp = funcs.rectification_func(self.neg_esc.get_response(image, x0, y0, s_cell_resp))
+    def get_response(self, images, s_cell_resp = None):
+        pos_esc_resp = torch.clamp(self.pos_esc.get_response(images, s_cell_resp), min = 0)
+        neg_esc_resp = torch.clamp(self.neg_esc.get_response(images, s_cell_resp), min = 0)
         
         return pos_esc_resp, neg_esc_resp
     
